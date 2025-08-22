@@ -1,0 +1,606 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>地金カウンター</title>
+<link href="manifest.webmanifest" rel="manifest"/>
+<meta content="#105FCA" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<!-- Tesseract.js for OCR (loaded from CDN on user device) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+  :root{
+    --bg:#0B1220; --panel:#121A2B; --accent:#105FCA; --muted:#8FA3BF; --text:#E8F0FF;
+    --radius:12px;
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans JP",sans-serif;}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  header{position:sticky;top:0;background:linear-gradient(180deg,#0B1220 70%,rgba(11,18,32,0));padding:12px 12px 6px;z-index:10}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .row{display:flex;gap:10px;flex-wrap:wrap}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .panel{background:var(--panel);border-radius:var(--radius);padding:12px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .input{display:flex;align-items:center;gap:6px;background:#0E1626;border:1px solid #24314A;border-radius:10px;padding:10px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .input input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:16px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:#0E1626;border:1px solid #24314A;color:var(--muted);font-size:12px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .grid{display:grid;grid-template-columns:1fr minmax(6rem,1fr) minmax(6rem,1fr) minmax(5.5rem,1fr);gap:8px;align-items:center}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .grid .hdr{color:#9FB4D6;font-size:12px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .mat{background:#0E1626;border:1px solid #24314A;border-radius:10px;padding:10px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .mat input{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;text-align:right}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .muted{color:var(--muted)}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .card{background:#0E1626;border:1px solid #24314A;border-radius:12px;padding:12px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .card h3{margin:0 0 6px 0;font-size:14px;color:#9FB4D6}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .big{font-size:22px;font-weight:700}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .btn{appearance:none;border:none;background:var(--accent);color:white;padding:12px 14px;border-radius:10px;font-weight:700}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .btn.secondary{background:#24314A}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin:8px 0 6px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .kome{font-size:12px;color:#A6B8D4}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .hint{font-size:11px;color:#9FB4D6;margin-top:6px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  #ocrPreview{max-width:100%;border:1px dashed #24314A;border-radius:10px;margin-top:8px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .ok{color:#18C37D}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  .warn{color:#FFD166}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+
+/* Mobile-first field layout */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+@media (min-width:560px){ .fields{grid-template-columns:repeat(4,1fr);}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+.field label{display:block;font-size:12px;color:#9FB4D6;margin:0 0 4px 2px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+.field .mat{padding:8px}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+</style>
+</head>
+<body>
+<header>
+<div class="row">
+<div class="panel" style="flex:1">
+<div class="section-title">
+<strong>買取金額</strong>
+<span class="kome">（あなたが支払う額）</span>
+</div>
+<div class="input">
+<span>¥</span><input id="buyAmount" inputmode="decimal" placeholder="50000" type="number"/>
+<button class="pill" id="buyClear">クリア</button>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="panel" style="flex:1">
+<div class="totals">
+<div class="card">
+<h3>トータル金額（表）</h3>
+<div class="big" id="sumOmote">¥0</div>
+<div class="kome">利益（表）：<span id="profitOmote">¥0</span></div>
+</div>
+<div class="card">
+<h3>トータル金額（裏）</h3>
+<div class="big" id="sumUra">¥0</div>
+<div class="kome">利益（裏）：<span id="profitUra">¥0</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="row toolbar">
+<button class="btn" id="saveBtn">保存</button>
+<button class="btn secondary" id="loadBtn">前回読み込み</button>
+<button class="btn secondary" id="resetBtn">リセット</button>
+<button class="btn secondary" id="settingsBtn">単価編集</button>
+<label class="btn secondary" for="ocrFile">画像から単価</label>
+<input accept="image/*" id="ocrFile" style="display:none" type="file"/>
+</div>
+<div class="hint">画像をアップロードすると、<span class="ok">裏 単価</span>に自動反映（OCR）。表単価は変更しません。</div>
+<img alt="" id="ocrPreview"/>
+</header>
+<main style="padding:10px 12px 60px">
+<div class="row" style="margin-top:10px">
+<div class="panel" style="flex:1">
+<div class="section-title">
+<h2 style="margin:0">個人設定（送信用）</h2>
+<span class="kome">苗字・係数・必達などを入力</span>
+</div>
+<div class="fields">
+<div class="field">
+<label>苗字</label>
+<div class="mat"><input id="inpSurname" placeholder="小林"/></div>
+</div>
+<div class="field">
+<label>伸び率(倍)</label>
+<div class="mat"><input id="inpFactor" inputmode="decimal" placeholder="1.34" step="0.01" type="number"/></div>
+</div>
+<div class="field">
+<label>必達(円)</label>
+<div class="mat"><input id="inpTarget" inputmode="decimal" placeholder="300000" type="number"/></div>
+</div>
+<div class="field">
+<label>残り日数</label>
+<div class="mat"><input id="inpDays" inputmode="numeric" placeholder="10" type="number"/></div>
+</div>
+</div>
+<div class="fields" style="margin-top:8px">
+<div class="field">
+<label>裏利益×伸び率</label>
+<div class="mat"><input id="outAdjProfit" readonly=""/></div>
+</div>
+<div class="field">
+<label>売上</label>
+<div class="mat"><input id="outSales" readonly=""/></div>
+</div>
+<div class="field">
+<label>残り金額</label>
+<div class="mat"><input id="outRemaining" inputmode="decimal" type="number"/></div>
+</div>
+<div class="field">
+<label>日割り</label>
+<div class="mat"><input id="outDaily" readonly=""/></div>
+</div>
+</div>
+<div class="input" style="margin-top:8px">
+<input id="inpNote" placeholder="最後のひと言（任意） 例）明日からも取り返します！"/>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="panel" style="flex:1">
+<div class="section-title">
+<h2 style="margin:0">送信文（自動生成）</h2>
+<button class="pill" id="copyBtn">コピー</button>
+</div>
+<pre id="msgBox" style="white-space:pre-wrap;line-height:1.6;background:#0E1626;border:1px solid #24314A;border-radius:10px;padding:12px;margin:0;color:#E8F0FF"></pre>
+<div class="kome" id="dbgLine" style="margin-top:6px;display:none">debug</div></div>
+</div>
+<section class="panel">
+<div class="section-title">
+<h2 style="margin:0">地金</h2>
+<span class="muted">グラム数 / 枚数を入力</span>
+</div>
+<div class="grid" style="margin-bottom:4px">
+<div class="hdr">品目</div>
+<div class="hdr" style="text-align:right">表 単価</div>
+<div class="hdr" style="text-align:right">裏 単価</div>
+<div class="hdr" style="text-align:right">数量</div>
+</div>
+<div id="materials"></div>
+</section>
+<section class="panel" style="margin-top:10px">
+<div class="section-title">
+<h2 style="margin:0">その他</h2>
+<span class="muted">テレカ・切手・コインなど</span>
+</div>
+<div class="grid" style="margin-bottom:4px">
+<div class="hdr">品目</div>
+<div class="hdr" style="text-align:right">表 単価</div>
+<div class="hdr" style="text-align:right">裏 単価</div>
+<div class="hdr" style="text-align:right">数量</div>
+</div>
+<div id="others"></div>
+</section>
+</main>
+<!-- 設定モーダル -->
+<div id="modal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px">
+<div class="panel" style="max-width:720px;width:100%">
+<div class="section-title">
+<strong>単価の編集</strong>
+<button class="pill" id="modalClose">閉じる</button>
+</div>
+<p class="kome">青字の単価（表・裏）を編集できます。金種は固定、名称変更は次版で対応します。</p>
+<div id="settingsArea"></div>
+<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+<button class="btn secondary" id="restoreBtn">初期値に戻す</button>
+<button class="btn" id="applyBtn">単価を適用</button>
+</div>
+</div>
+</div>
+<script>
+// ------ 初期データ ------
+const DEFAULT_RATES = {
+  materials: [
+    { key:"k24ig", name:"K24IG", omote:0, ura:16000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k24s",  name:"K24S",  omote:0, ura:16000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k23",   name:"K23",   omote:0, ura:15500 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k22",   name:"K22",   omote:0, ura:14500 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k21_6", name:"K21.6", omote:0, ura:14000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k20",   name:"K20",   omote:0, ura:13000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k18",   name:"K18",   omote:0, ura:12000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k18wg", name:"K18WG", omote:0, ura:12000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k14",   name:"K14",   omote:0, ura: 8500 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k14wg", name:"K14WG", omote:0, ura: 9000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k10",   name:"K10",   omote:0, ura: 5500 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"k9",    name:"K9",    omote:0, ura: 5000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"pt1000",name:"Pt1000",omote:0, ura: 6000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"pt950", name:"Pt950", omote:0, ura: 6000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"pt900", name:"Pt900", omote:0, ura: 6000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"pt850", name:"Pt850", omote:0, ura: 6000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"mix_k18_pt900_5_5", name:"K18/Pt900 (5:5)", omote:0, ura: 9000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"mix_k18_pt900_2_8", name:"K18/Pt900 (2:8)", omote:0, ura: 7000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"mix_k18_pt850_5_5", name:"K18/Pt850 (5:5)", omote:0, ura: 9000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"mix_k18_pt850_2_8", name:"K18/Pt850 (2:8)", omote:0, ura: 7000 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"gold_coin_face", name:"額面金貨", omote:0, ura:15500 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"sv1000",name:"Sv1000",omote:0, ura: 160 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"sv925", name:"Sv925", omote:0, ura: 150 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  ],
+  others: [
+    { key:"teleca1000", name:"テレカ1000", omote:750, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"teleca500",  name:"テレカ500",  omote:350, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"kitteSheet", name:"切手シート", omote:0.75, ura:0, hint:"額面×%" }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"kitteBara",  name:"切手バラ・束帯", omote:0.70, ura:0, hint:"額面×%" }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin10000",  name:"記念コイン 10000", omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin5000",   name:"記念コイン 5000",  omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin1000",   name:"記念コイン 1000",  omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin500",    name:"記念コイン 500",   omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin100",    name:"記念コイン 100",   omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},
+    { key:"coin50",     name:"記念コイン 50",    omote:0, ura:0 }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  ]
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}};
+
+// OCR label -> key mapping (normalize: remove spaces, fullwidth -> halfwidth, uppercase)
+const OCR_MAP = [
+  ["K24IG","k24ig"],["K24S","k24s"],["K23","k23"],["K22","k22"],["K21.6","k21_6"],["K20","k20"],
+  ["K18WG","k18wg"],["K18","k18"],["K14WG","k14wg"],["K14","k14"],["K10","k10"],["K9","k9"],
+  ["PT1000","pt1000"],["PT950","pt950"],["PT900","pt900"],["PT850","pt850"],
+  ["K18/PT900(5:5)","mix_k18_pt900_5_5"],["K18/PT900(2:8)","mix_k18_pt900_2_8"],
+  ["K18/PT850(5:5)","mix_k18_pt850_5_5"],["K18/PT850(2:8)","mix_k18_pt850_2_8"],
+  ["額面金貨","gold_coin_face"],["SV1000","sv1000"],["SV 1000","sv1000"],["S V 1000","sv1000"],
+  ["SV925","sv925"],["S V 925","sv925"]
+];
+
+// ------ 状態 ------
+let state = {
+  buyAmount: 0,
+  qty: {}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}, // key -> number
+  rates: JSON.parse(localStorage.getItem("jg_rates") || "null") || DEFAULT_RATES
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}};
+
+function yen(n){
+  if(!isFinite(n)) return "¥0";
+  return "¥"+Math.round(n).toLocaleString();
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function renderLines(containerId, list){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = "";
+  list.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "grid mat";
+    row.innerHTML = `
+      <div>${item.name}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}${item.hint?`<div class="kome">${item.hint}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}</div>`:""}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}</div>
+      <div style="text-align:right"><input type="number" inputmode="decimal" value="${item.omote}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-rate="omote" data-key="${item.key}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" /></div>
+      <div style="text-align:right"><input type="number" inputmode="decimal" value="${item.ura}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-rate="ura" data-key="${item.key}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" /></div>
+      <div style="text-align:right"><input type="number" inputmode="decimal" placeholder="0" value="${state.qty[item.key]||""}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-qty="${item.key}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" /></div>
+    `;
+    wrap.appendChild(row);
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function renderSettings(){
+  const area = document.getElementById("settingsArea");
+  const r = state.rates;
+  function tableFor(title, arr){
+    const table = document.createElement("div");
+    table.className = "panel";
+    table.style.marginTop = "8px";
+    table.innerHTML = `<div class="section-title"><strong>${title}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}</strong></div>`;
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    grid.innerHTML = `
+      <div class="hdr">品目</div>
+      <div class="hdr" style="text-align:right">表 単価</div>
+      <div class="hdr" style="text-align:right">裏 単価</div>
+      <div class="hdr" style="text-align:right">（参考）</div>
+    `;
+    arr.forEach(it=>{
+      const row = document.createElement("div");
+      row.className = "grid mat";
+      row.innerHTML = `
+        <div>${it.name}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}</div>
+        <div style="text-align:right"><input type="number" inputmode="decimal" value="${it.omote}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-skey="${it.key}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-srate="omote"/></div>
+        <div style="text-align:right"><input type="number" inputmode="decimal" value="${it.ura}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-skey="${it.key}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}" data-srate="ura"/></div>
+        <div class="muted" style="text-align:right">-</div>
+      `;
+      grid.appendChild(row);
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+    table.appendChild(grid);
+    return table;
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  area.innerHTML = "";
+  area.appendChild(tableFor("地金", r.materials));
+  area.appendChild(tableFor("その他", r.others));
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function recalc(){
+  const buy = Number(document.getElementById("buyAmount").value || 0);
+  state.buyAmount = buy;
+  const r = state.rates;
+  let sumO=0, sumU=0;
+
+  r.materials.forEach(it=>{
+    const qty = Number(state.qty[it.key] || 0);
+    sumO += qty * Number(it.omote||0);
+    sumU += qty * Number(it.ura||0);
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  r.others.forEach(it=>{
+    const qty = Number(state.qty[it.key] || 0);
+    if(it.key.startsWith("kitte")){
+      sumO += qty * (Number(it.omote||0));
+      sumU += qty * (Number(it.ura||0));
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}else{
+      sumO += qty * Number(it.omote||0);
+      sumU += qty * Number(it.ura||0);
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+  document.getElementById("sumOmote").textContent  = yen(sumO);
+  document.getElementById("sumUra").textContent    = yen(sumU);
+  document.getElementById("profitOmote").textContent = yen(sumO - buy);
+  document.getElementById("profitUra").textContent   = yen(sumU - buy);
+  updatePersonal();
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function hookInputs(){
+  document.getElementById("buyAmount").addEventListener("input", recalc);
+  document.getElementById("buyClear").addEventListener("click", ()=>{
+    document.getElementById("buyAmount").value = "";
+    recalc();
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+  document.querySelectorAll("[data-qty]").forEach(inp=>{
+    inp.addEventListener("input", (e)=>{
+      const k = e.target.getAttribute("data-qty");
+      state.qty[k] = e.target.value;
+      recalc();
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.querySelectorAll("[data-rate]").forEach(inp=>{
+    inp.addEventListener("input", (e)=>{
+      const k = e.target.getAttribute("data-key");
+      const t = e.target.getAttribute("data-rate");
+      for(const it of state.rates.materials.concat(state.rates.others)){
+        if(it.key===k){ it[t] = Number(e.target.value||0); break; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+      }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+      localStorage.setItem("jg_rates", JSON.stringify(state.rates));
+      recalc();
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+  // 設定モーダル
+  document.getElementById("settingsBtn").addEventListener("click", ()=>{
+    renderSettings();
+    document.getElementById("modal").style.display="flex";
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.getElementById("modalClose").addEventListener("click", ()=>{
+    document.getElementById("modal").style.display="none";
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.getElementById("restoreBtn").addEventListener("click", ()=>{
+    state.rates = JSON.parse(JSON.stringify(DEFAULT_RATES));
+    localStorage.setItem("jg_rates", JSON.stringify(state.rates));
+    renderSettings();
+    renderLines("materials", state.rates.materials);
+    renderLines("others", state.rates.others);
+    hookInputs();
+    recalc();
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.getElementById("applyBtn").addEventListener("click", ()=>{
+    document.querySelectorAll("[data-skey]").forEach(inp=>{
+      const k = inp.getAttribute("data-skey");
+      const t = inp.getAttribute("data-srate");
+      for(const it of state.rates.materials.concat(state.rates.others)){
+        if(it.key===k){ it[t] = Number(inp.value||0); break; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+      }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+    localStorage.setItem("jg_rates", JSON.stringify(state.rates));
+    renderLines("materials", state.rates.materials);
+    renderLines("others", state.rates.others);
+    hookInputs();
+    recalc();
+    document.getElementById("modal").style.display="none";
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+  // 保存／読込／リセット
+  document.getElementById("saveBtn").addEventListener("click", ()=>{
+    localStorage.setItem("jg_state", JSON.stringify({buyAmount: state.buyAmount, qty: state.qty}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}));
+    alert("保存しました（この端末のみ）");
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.getElementById("loadBtn").addEventListener("click", ()=>{
+    const d = JSON.parse(localStorage.getItem("jg_state")||"null");
+    if(!d){ alert("前回の保存データがありません"); return; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+    state.buyAmount = d.buyAmount||0;
+    state.qty = d.qty||{}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}};
+    document.getElementById("buyAmount").value = state.buyAmount||"";
+    renderLines("materials", state.rates.materials);
+    renderLines("others", state.rates.others);
+    hookInputs();
+    document.querySelectorAll("[data-qty]").forEach(inp=>{
+      const k = inp.getAttribute("data-qty");
+      inp.value = state.qty[k]||"";
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+    recalc();
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    if(confirm("入力をすべてクリアしますか？")){
+      state.qty = {}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}};
+      document.querySelectorAll("[data-qty]").forEach(inp=> inp.value="");
+      document.getElementById("buyAmount").value="";
+      recalc();
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+  // OCR 画像読み込み
+  document.getElementById("ocrFile").addEventListener("change", async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const img = document.getElementById("ocrPreview");
+    img.src = URL.createObjectURL(file);
+    await ocrAndApply(file);
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+// ---- OCR & 反映 ----
+function normalizeText(s){
+  // 半角化・空白削除・全角記号→半角
+  const z2h = s.normalize('NFKC').toUpperCase();
+  return z2h.replace(/[\s　]/g,''); // remove spaces
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function applyRatesFromText(text){
+  const norm = normalizeText(text);
+  let hits = 0;
+  function findPrice(label){
+    // pattern: LABEL¥16000 or LABEL:¥16000
+    const escaped = label.replace(/([.*+?^=!:${}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}()|\[\]\\])/g,'\\$1');
+    const m = norm.match(new RegExp(escaped + "[^0-9]*([0-9]{1,3}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}(?:,[0-9]{3}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}})*|[0-9]+)","i"));
+    if(m){
+      return Number(m[1].replace(/,/g,''));
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+    return null;
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  for(const [label,key] of OCR_MAP){
+    const p = findPrice(label);
+    if(p!=null){
+      // set 裏単価
+      for(const it of state.rates.materials){
+        if(it.key===key){ it.ura = p; hits++; break; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+      }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  if(hits>0){
+    localStorage.setItem("jg_rates", JSON.stringify(state.rates));
+    renderLines("materials", state.rates.materials);
+    renderLines("others", state.rates.others);
+    hookInputs();
+    recalc();
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  return hits;
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+async function ocrAndApply(file){
+  try{
+    document.querySelector('.hint').innerHTML = 'OCR解析中…少し待ってね';
+    const { data:{ text }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} = await Tesseract.recognize(file, 'jpn+eng', { logger:m=>{}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+    const hits = applyRatesFromText(text);
+    document.querySelector('.hint').innerHTML = hits
+      ? `<span class="ok">${hits}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}件</span>の裏単価を更新しました`
+      : '<span class="warn">単価が読み取れませんでした。画像の解像度や明るさを調整して再試行してください。</span>';
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}catch(err){
+    console.error(err);
+    document.querySelector('.hint').innerHTML = '<span class="warn">OCRでエラー。もう一度試してください。</span>';
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+
+// ---- 個人向け計算とメッセージ ----
+function getTodayString(){
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}/${mm}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}/${dd}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}`;
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function parseYenText(t){
+  const n = Number(String(t||'').replace(/[^0-9.-]/g,''));
+  return isFinite(n)?n:0;
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+function updatePersonal(){
+  try{
+  const factor = Number(document.getElementById('inpFactor')?.value || 0);
+  const target = Number(document.getElementById('inpTarget')?.value || 0);
+  const days   = Number(document.getElementById('inpDays')?.value || 0);
+
+  const profitUraText = document.getElementById('profitUra').textContent;
+  const profitUra = parseYenText(profitUraText);
+
+  const adj = factor ? profitUra * factor : 0;
+  const outAdj = document.getElementById('outAdjProfit');
+  if(outAdj){ outAdj.value = yen(adj); }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+  const salesEl = document.getElementById('outSales');
+  if(salesEl){ salesEl.value = yen(adj); }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+  // per-surname factor memory
+  const sur = (document.getElementById('inpSurname')?.value || '').trim();
+  const map = JSON.parse(localStorage.getItem('jg_factors')||'{}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}');
+  if(sur && factor){ map[sur]=Number(factor); localStorage.setItem('jg_factors', JSON.stringify(map)); }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+
+  const remEl = document.getElementById('outRemaining');
+  let remaining = Number(remEl?.value || 0);
+  // 自動算出（未入力のときだけ）
+  if(remEl && (!remEl.value || remEl.value === '0')){
+    remaining = Math.max(target - adj, 0);
+    remEl.value = Math.round(remaining);
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  const dailyEl = document.getElementById('outDaily');
+  if(dailyEl){
+    dailyEl.value = (days>0) ? yen(remaining / days) : '¥0';
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+  updateMessage(adj, remaining, days);
+  const dbg=document.getElementById('dbgLine'); if(dbg){dbg.textContent=`売上:${Math.round(adj)}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} 残:${Math.round(remaining)}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} 日:${days}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}`;}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+['inpSurname','inpFactor','inpTarget','inpDays','outRemaining','inpNote'].forEach(id=>{
+  document.addEventListener('input', (e)=>{
+    if(e.target && e.target.id===id){ updatePersonal(); }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+function updateMessage(adjProfit, remaining, days){
+  const sur = (document.getElementById('inpSurname')?.value || '').trim();
+  const factor = (document.getElementById('inpFactor')?.value || '').trim();
+  const target = Number(document.getElementById('inpTarget')?.value || 0);
+  const daily  = days>0 ? Math.round(remaining/days) : 0;
+  const note   = (document.getElementById('inpNote')?.value || '').trim();
+
+  const date = getTodayString();
+  const line1 = `お疲れ様です！\n${date}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}} ${veh||'1'}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}車両`;
+  const line2 = `伸び率${factor||'1.00'}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}倍（変動あり）`;
+  const line3 = `必達${target.toLocaleString()}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}円`;
+  const line4 = `残り${Math.round(remaining).toLocaleString()}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}円`;
+  const line5 = `残${days||0}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}日予定`;
+  const line6 = `日割り${daily.toLocaleString()}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}円`;
+  const tail  = note ? `\n\n${note}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}` : '';
+  const saleLine = `売上 ${Math.round(adjProfit).toLocaleString()}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}円`;
+  const msg = [line1,line2,saleLine,line3,line4,line5,line6].join('\n') + tail;
+
+  const box = document.getElementById('msgBox');
+  if(box){ box.textContent = msg; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+
+
+document.getElementById('inpSurname')?.addEventListener('change', ()=>{
+  const sur = (document.getElementById('inpSurname')?.value || '').trim();
+  const map = JSON.parse(localStorage.getItem('jg_factors')||'{}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}');
+  if(sur && map[sur]){
+    document.getElementById('inpFactor').value = map[sur];
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+  updatePersonal();
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.id==='copyBtn'){
+    const text = document.getElementById('msgBox').textContent || '';
+    navigator.clipboard.writeText(text).then(()=>{
+      document.getElementById('copyBtn').textContent='コピー済み！';
+      setTimeout(()=>{ document.getElementById('copyBtn').textContent='コピー'; }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}},1200);
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}).catch(()=>{
+      alert('コピーに失敗しました');
+    }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+
+// 初期描画
+renderLines("materials", state.rates.materials);
+renderLines("others", state.rates.others);
+hookInputs();
+recalc();
+updatePersonal();
+
+// PWA 登録
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js");
+  }catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}});
+}catch(e){const dbg=document.getElementById('dbgLine'); if(dbg){dbg.style.display='block'; dbg.textContent='エラー:'+e.message;}}}
+</script>
+</body>
+</html>
